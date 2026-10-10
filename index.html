@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Life Grid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+  <main class="stage" id="stage">
+    <div class="frame" id="frame"><canvas id="cv" aria-label="Generative grid of lines and cubes"></canvas></div>
+    <div class="caption" id="caption"></div>
+  </main>
+  <aside class="panel">
+    <header>
+      <h1>Life Grid<span class="sw" aria-hidden="true"><i style="background:#D42A1E"></i><i style="background:#F5C80A"></i><i style="background:#1D3F8F"></i><i style="background:#141414"></i></span></h1>
+      <p class="sub">Lines cross, rectangles become possible, and some of them fill. Each rectangle can become a cube, a quarter or half circle, a pillar or a sphere, its depth taken from the heights of its four lines. The top view hides it; 3D reveals it.</p>
+    </header>
+
+    <section class="block">
+      <div class="lbl">Person</div>
+      <div class="field"><label for="nm">Name</label><input type="text" id="nm" value="Ada Lin" autocomplete="off"></div>
+      <div class="row2">
+        <div class="field"><label for="bd">Birthday</label><input type="date" id="bd" value="1988-05-17"></div>
+        <div class="field"><label for="bt">Birth time</label><input type="time" id="bt" value="06:40"></div>
+      </div>
+      <button class="btn ghost" id="rnd" type="button">Random person</button>
+    </section>
+
+    <section class="block">
+      <div class="yearline"><span class="lbl">Year</span><span class="year" id="yr">0</span></div>
+      <input type="range" id="year" min="0" max="100" step="0.1" value="0" aria-label="Year of life">
+      <canvas id="spark" aria-label="Density over a lifetime"></canvas>
+      <div class="row"><button class="btn" id="play" type="button">Play</button><span class="note" id="flow"></span></div>
+    </section>
+
+    <section class="block">
+      <div class="lbl">View</div>
+      <div class="views" id="view" role="group" aria-label="Camera view">
+        <button type="button" data-v="top" aria-pressed="true" title="Top view"><span class="dot">T</span><small>Top</small></button>
+        <button type="button" data-v="front" aria-pressed="false" title="Front: the bottom edge of the top view"><span class="dot">F</span><small>Front</small></button>
+        <button type="button" data-v="right" aria-pressed="false" title="Right side"><span class="dot">R</span><small>Right</small></button>
+        <button type="button" data-v="back" aria-pressed="false" title="Back"><span class="dot">B</span><small>Back</small></button>
+        <button type="button" data-v="left" aria-pressed="false" title="Left side"><span class="dot">L</span><small>Left</small></button>
+        <button type="button" data-v="under" aria-pressed="false" title="Underground, looking up"><span class="dot">U</span><small>Under</small></button>
+        <button type="button" data-v="free" aria-pressed="false" title="Free 3D: orbit and zoom"><span class="dot">3D</span><small>Free</small></button>
+      </div>
+      <div class="yearline"><label for="lens">Lens</label><span class="mono note" id="lensv">–</span></div>
+      <input type="range" id="lens" min="0" max="100" step="1" value="0" aria-label="Lens: flat to wide perspective">
+      <p class="hint">Top view looks straight down toward this person's vanishing point. Front, right, back and left look in level from each side; under looks up from below the ground. In free 3D: drag to orbit, scroll or pinch to zoom, right-drag or two-finger drag to pan.</p>
+      <button class="link" id="resetView" type="button" hidden>Reset 3D view</button>
+    </section>
+
+    <section class="block">
+      <div class="lbl">Format</div>
+      <div class="seg" id="fmt">
+        <button type="button" data-f="1" aria-pressed="false">1:1</button>
+        <button type="button" data-f="0.75" aria-pressed="true">3:4</button>
+        <button type="button" data-f="1.3333333" aria-pressed="false">4:3</button>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="lbl">Save image</div>
+      <div class="seg" id="exp">
+        <button type="button" data-h="2048">2K</button>
+        <button type="button" data-h="4096">4K</button>
+        <button type="button" data-h="8192">8K</button>
+      </div>
+      <p class="hint" id="expStatus">PNG of the current view and year, 2048, 4096 or 8192 px tall, on full-size paper.</p>
+    </section>
+
+    <section class="block">
+      <div class="yearline"><span class="lbl">Line groups</span><span class="mono" id="gv">–</span></div>
+      <input type="range" id="groups" min="10" max="50" step="1" value="24" aria-label="Number of line groups">
+      <button class="link" id="gseed" type="button">Use this person's value</button>
+    </section>
+
+    <section class="block">
+      <div class="lbl">Reading</div>
+      <dl>
+        <dt>Composition</dt><dd id="sComp">–</dd>
+        <dt>Flow</dt><dd id="sFlow">–</dd>
+        <dt>Height</dt><dd id="sHgt">–</dd>
+        <dt>Long lines</dt><dd id="sLong">–</dd>
+        <dt>Vanishing point</dt><dd id="sVp">–</dd>
+        <dt>Groups visible</dt><dd id="sGrp">–</dd>
+        <dt>Lines visible</dt><dd id="sLin">–</dd>
+        <dt>Candidates area[n]</dt><dd id="sCand">–</dd>
+        <dt>Round solids</dt><dd id="sRound">–</dd>
+        <dt>Open boxes</dt><dd id="sOpen">–</dd>
+        <dt>Tree moves</dt><dd id="sTree">–</dd>
+        <dt>Solids placed</dt><dd id="sBox">–</dd>
+        <dt>Open frames</dt><dd id="sWire">–</dd>
+      </dl>
+    </section>
+  </aside>
+</div>
+
+
+<script src="vendor/three-r128/three.min.js"></script>
+<script src="vendor/three-r128/OrbitControls.js"></script>
+<script src="data/acacia-tree.js"></script>
+<script src="js/00-utils.js"></script>
+<script src="js/01-config.js"></script>
+<script src="js/02-model.js"></script>
+<script src="js/03-paper.js"></script>
+<script src="js/04-scene.js"></script>
+<script src="js/05-update.js"></script>
+<script src="js/06-camera.js"></script>
+<script src="js/07-ui.js"></script>
+<script src="js/08-export.js"></script>
+<script src="js/09-main.js"></script>
+</body>
+</html>
